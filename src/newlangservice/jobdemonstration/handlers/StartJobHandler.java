@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * Our sample handler extends AbstractHandler, an IHandler base class.
@@ -30,10 +31,21 @@ public class StartJobHandler extends AbstractHandler {
 		Job job = new Job("About to say hello") {
 			protected IStatus run(IProgressMonitor monitor) {
 				try {
-					Thread.sleep(5000);
+					monitor.beginTask("Preparing", 5000);
+					for (int i = 0; i < 5; i++) {
+						Thread.sleep(1000);
+						monitor.worked(1000);
+					}
 				} catch (InterruptedException e) {
+				} finally {
+					monitor.done();
 				}
-				MessageDialog.openInformation(null, "Hello", "World");
+
+				Display.getDefault().asyncExec(new Runnable() {
+					public void run() {
+						MessageDialog.openInformation(null, "Hello", "World");
+					}
+				});
 				return Status.OK_STATUS;
 			}
 		};
